@@ -1,6 +1,8 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const app = express();
 
+mongoose.connect("mongodb://root:shuaib@ip-address");
 app.get("/", (req, res) => {
     res.send("<h2>HI There</h2>");
 });

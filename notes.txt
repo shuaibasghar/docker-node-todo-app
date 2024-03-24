@@ -381,3 +381,136 @@ depd		      get-intrinsic	  mime			    safe-buffer
 destroy		      gopd		  mime-db		    safer-buffer
 root@a67cbe2ecd1c:/app/node_modules# 
 
+
+now we are adding an other service which is basically mongodb services
+which will be runing on other container as a service
+add mongo in docker-compose
+version: "3"
+services:
+    node-app:
+        build: .
+        ports:
+            - "3000:3000"
+        environment:
+            - PORT=3000
+    # adding a database we can name it anythinlike mongo or mongodb
+    mongo:
+        image: mongo
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=shuaib
+            - MONGO_INITDB_ROOT_PASSWORD=shuaib
+
+
+ev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+[+] Running 9/9
+ ✔ mongo 8 layers [⣿⣿⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                       430.9s 
+   ✔ bccd10f490ab Pull complete                                                                            79.6s 
+   ✔ b00c7ff578b0 Pull complete                                                                             2.2s 
+   ✔ a1f43ab85151 Pull complete                                                                             4.8s 
+   ✔ 9e72f6a5998a Pull complete                                                                             5.8s 
+   ✔ 8424336879e4 Pull complete                                                                             7.5s 
+   ✔ 85a6d3c2e6c8 Pull complete                                                                             7.6s 
+   ✔ c533c21e5fb8 Pull complete                                                                           410.8s 
+   ✔ 1fddf702bb73 Pull complete                                                                             9.9s 
+[+] Building 3.4s (10/10) FINISHED                                                                docker:default
+ => [node-app internal] load .dockerignore                                                                  0.0s
+ => => transferring context: 120B                                                                           0.0s
+ => [node-app internal] load build definition from Dockerfile                                               0.0s
+ => => transferring dockerfile: 1.24kB                                                                      0.0s
+ => [node-app internal] load metadata for docker.io/library/node:20.0-slim                                  3.3s
+ => [node-app internal] load build context                                                                  0.0s
+ => => transferring context: 155B                                                                           0.0s
+ => [node-app 1/5] FROM docker.io/library/node:20.0-slim@sha256:702d475af4b8045f701afd10ea865f4454e9aab4fe  0.0s
+ => CACHED [node-app 2/5] WORKDIR /app                                                                      0.0s
+ => CACHED [node-app 3/5] COPY package.json .                                                               0.0s
+ => CACHED [node-app 4/5] RUN if [ "development" = "development" ]; then         npm install;     else      0.0s
+ => CACHED [node-app 5/5] COPY . ./                                                                         0.0s
+ => [node-app] exporting to image                                                                           0.0s
+ => => exporting layers                                                                                     0.0s
+ => => writing image sha256:abd25df727c9d3cb9fe27727784157b95990cfef7317adbd3fc5d269e5bda211                0.0s
+ => => naming to docker.io/library/docker-nodejs-node-app                                                   0.0s
+[+] Running 2/2
+ ✔ Container docker-nodejs-mongo-1     Started                                                              1.4s 
+ ✔ Container docker-nodejs-node-app-1  Started                                                             12.1s 
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ 
+
+let see mongodb is connected with a new containerdocker-compose ps
+NAME                       IMAGE                    COMMAND                  SERVICE             CREATED              STATUS              PORTS
+docker-nodejs-mongo-1      mongo                    "docker-entrypoint.s…"   mongo               About a minute ago   Up About a minute   27017/tcp
+docker-nodejs-node-app-1   docker-nodejs-node-app   "docker-entrypoint.s…"   node-app            About a minute ago   Up About a minute   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+
+
+go inside mongo container service
+docker-compose exec -it mongo bash
+root@26de13c59fcf:/# mong
+bash: mong: command not found
+root@26de13c59fcf:/# mongo
+bash: mongo: command not found
+root@26de13c59fcf:/# mongosh
+Current Mongosh Log ID:	66005e7d79f2fd5e69db83af
+Connecting to:		mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.0
+Using MongoDB:		7.0.7
+Using Mongosh:		2.2.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+test> 
+(To exit, press Ctrl+C again or Ctrl+D or type .exit)
+test> 
+root@26de13c59fcf:/# mongo -u root -p shuaib
+bash: mongo: command not found
+root@26de13c59fcf:/# mongosh -u root -p shuaib
+Current Mongosh Log ID:	66005e9ed0677525c9db83af
+Connecting to:		mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.0
+Using MongoDB:		7.0.7
+Using Mongosh:		2.2.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2024-03-24T16:59:58.281+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+   2024-03-24T16:59:59.057+00:00: Soft rlimits for open file descriptors too low
+------
+
+test> show dbs
+admin   100.00 KiB
+config   12.00 KiB
+local    72.00 KiB
+test> 
+
+ok so if you delete the container and rerun the up command without --build flag
+and again go to mongo service you see the old created data is destroyed
+
+but in the case of data base i do not want to loose it
+
+create a volume wiht human readabel name it is same like anonymous volume but it has a meaningfull name 
+
+updated dockerfile to persist data inside the volum mongo-db data/db
+  mongo:
+        image: mongo
+        restart: always
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD=shuaib
+        volumes:
+            - mongo-db:/data/db
+
+
+volumes:
+    mongo-db:
+  //may be there are multiple services
+
+
+now simply use without using -v flag which deltes all the volummes associated with the containers
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
+[+] Running 3/3
+ ✔ Container docker-nodejs-node-app-1  Removed                                                              0.8s 
+ ✔ Container docker-nodejs-mongo-1     Removed                                                              0.3s 
+ ✔ Network docker-nodejs_default       Removed           
+
+ if you want to use 
+ docker volume prune 
+ first you need to start container now it will not delte the volumes which are assocaiated with contaienrs
+
+ now see data is persisting still after deleting the container
