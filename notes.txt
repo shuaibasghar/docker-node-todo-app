@@ -1,0 +1,191 @@
+create  node js project
+run initalialy server on port
+create a custom image wrting configs in Dockerfile
+after configuring the docker file create an image
+stop the nodejs project from local
+sudo docker build . -------------------. means in current directory 
+sudo docker images ls ---------------to see all the images
+sudo docker image rm 99ecbb57ee84 ----------------to remove the specific images by using id
+sudo docker build -t node-app-image . ------------------here -t flag is passed to give it a name
+create a container 
+/*
+--------   docker run -d --name node-app node-app-image
+------1. docker run: This is the primary command to create and run a new container from a Docker image.
+
+2. -d
+
+: This flag stands for "detached mode." It means the container will run in the background, and you won't see its output directly in your terminal. You can use docker logs node-app to view its output later.
+
+3. --name node-app: This option assigns a user-friendly name to the container, making it easier to reference and manage. In this case, the container will be named "node-app".
+
+4. node-app-image: This is the name of the Docker image that you want to run. It contains the packaged application and all its dependencies.
+
+In summary, this command:
+
+    Starts a new container in detached mode from the image named "node-app-image".
+    Assigns the name "node-app" to the container for easy identification.
+    Runs the application within the container in the background.
+
+Additional notes:
+
+    If the image is not available locally, Docker will attempt to pull it from a remote registry.
+    After running this command, you can use docker ps to list running containers and docker logs node-app to view the container's logs.
+*/
+
+sudo docker rm containere name or id and contaienr image or id
+sudo docker rm node-app node-app-image
+bind the port on which we listern on our browser
+
+sudo docker run -d --name node-app -p 3000:3000 node-app-image
+
+//to go inside the container
+
+ sudo docker exec -it node-app bash
+root@2566a8f74017:/app# ls
+Dockerfile  index.js  node_modules  notes.txt  package-lock.json  package.json
+root@2566a8f74017:/app# 
+we moved to by default app directroy which is because weh have SET workflow/app
+see there is a docker file also in side a container but we do not need it inside a container that because we use COPY . .
+MAY BE we also do not need env file inside of container
+and also we are getting nodemoudles inside our container but we do not need this because we are copy package.json an dusing command npm install
+so for this we use .dockerignore file like gitignore
+
+to delte the container
+sudo docker rm node-app -f
+
+now add .dockerignore file and add the files which you want to be ignored
+
+
+-------------
+sync our source code to the docker container so that we can see our changes without rebuilding the image
+for this use below command which is called Bind Mount Volume
+
+docker run -v $(pwd):/app -p 3000:3000 -d --name node-app node-app-image
+--------     -v is for volume     $(pwd):/app        $(pwd)---this is the present working directory of local system :the directory in container which is /app
+
+-now make changes in code and see it inside the container by using command
+
+docker exec -it node-app bash
+root@8550499f0bab:/app# ls
+Dockerfile  node_modules  package-lock.json
+index.js    notes.txt	  package.json
+root@8550499f0bab:/app# cat index.js 
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+    res.send("<h2>HI There! Shuaib</h2>");
+});
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => console.log(`listening on port ${port}`));
+root@8550499f0bab:/app# cat index.js 
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+    res.send("<h2>HI There it s me</h2>");
+});
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => console.log(`listening on port ${port}`));
+root@8550499f0bab:/app# 
+
+see we are able to see changes inside the container but still we are unable to see the changes on our browser
+becasue when we changes the file we need to restart the node process also 
+so for this we use to install nodemon as dev dependency and update the commad cmd in dockerfile also CMD ["npm","run","dev"]
+
+
+now if we delte the node_modules form our local system it will creates problem the container will stopped working becasue bindmout method is copying the whole folder when it is syncing our code so now there is no nodemone there no node_modules so 
+we can fix this by 
+
+we cna using anonymous docker volume which reference the node_modules folder -v /app/node_modules
+it means while syncing it will not over ride the app directory it simply add other files not replace with new files or folders and it will not touch the nodemoudles folder
+
+
+docker run -v $(pwd):/app -v /app/node_modules -p 3000:3000 -d --name node-app node-app-image
+
+in our docker file there is COPY . ./ ----IT Is important perhaps the bind mount method is syncing our code but it is only for development but in production we will not use bindmount
+
+
+when we use bindmount it is two way sync if you add files in locals it will automatically added in container and you have already delted the node_moudles folder but when you rebuild images it comes back because it is due to bindmout sync method
+
+so we need to use ro flag which means read only docker run -v $(pwd):/app:ro -v /app/node_modules -p 3000:3000 -d --name node-app node-app-image
+
+see the realtime example below
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker run -v $(pwd):/app:ro -v /app/node_modules -p 3000:3000 -d --name node-app node-app-image
+adb646d40af2be5ecb9e89e2a69b9c69a8b322be1da03fe75259f82f54c3b0ec
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker exec  -it node-app bash
+root@adb646d40af2:/app# ls
+Dockerfile  node_modules  package-lock.json
+index.js    notes.txt	  package.json
+root@adb646d40af2:/app# touch testfile
+touch: cannot touch 'testfile': Read-only file system
+root@adb646d40af2:/app# 
+
+now we can not create file inside container but in vscode we create a file it will be displayed there becuase of bindmount sync
+
+I AM using ENV now
+ENV PORT=3000
+# SERVER will be running on this port
+EXPOSE ${PORT}
+let see in realtime example here 
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker run -v $(pwd):/app:ro -v /app/node_modules --env PORT=8000 -p 3000:5000 -d --name node-app node-app-image
+b81e4434973eec39d5e71c5cc6cce879d36e99ca7116b535cc578ece643a3d71
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker exec  -it node-app bash
+root@b81e4434973e:/app# printenv
+HOSTNAME=b81e4434973e
+YARN_VERSION=1.22.19
+PWD=/app
+PORT=5000
+HOME=/root
+TERM=xterm
+SHLVL=1
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+NODE_VERSION=20.0.0
+_=/usr/bin/printenv
+root@b81e4434973e:/app# 
+
+
+now create a file of .env add PORT=8000
+i.e ------i have added --env.file with path ./.env
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker run -v $(pwd):/app:ro -v /app/node_modules --env-file ./.env -p 3000:5000 -d --name node-app node-app-image8818166d53a85e3f0df754dcd2c374d847cdee0850b2fe25458174ebe7fb4dc2
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker exec  -it node-app bash
+root@8818166d53a8:/app# printenv
+HOSTNAME=8818166d53a8
+YARN_VERSION=1.22.19
+PWD=/app
+PORT=8000
+HOME=/root
+TERM=xterm
+SHLVL=1
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+NODE_VERSION=20.0.0
+_=/usr/bin/printenv
+root@8818166d53a8:/app# 
+
+
+see about volumes 
+docker volume ls
+DRIVER    VOLUME NAME
+local     5e90cbe352dbbdc969879777bf569cfe608e241dc64328b4c7a5d08698d60254
+local     6ed7ee56d36d75f8889b682bc951e771fce38c6b0f289d8001e36c1e305ddcfd
+local     9e084a0eb86ae0745d1281c05cad39f26ec3a4748990bdbcebb0e58fa152ec0d
+local     50da1c53da438cbba9d178d59b5b58016833c547fd54826818ee586c2a0a5d61
+local     59a32963f23495e69739f38182d71daa871127b0d18b321a961355511a99eee2
+local     volume-devops-clever_wescoff
+ when ever we delete the container it preserved the /app/node_modules every time
+
+sometime these volume contains the databse like postgres may be we donot dlete it
+ 
+ so we can delete it manually
+docker volume prune ------it will delte the all volumes 
+docker volume rm VOLUME NAME
+ --
+ OR when we delte the container
+ docker rm node-app -fv ----------use v flage with f it will delete the volume associalted with node-app container
+
+ ---------------
+
+ now added docker-compose.yml
+

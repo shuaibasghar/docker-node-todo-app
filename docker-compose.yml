@@ -1,0 +1,13 @@
+version: "3"
+services:
+    node-app:
+        build: . #this will run build to run dockerfile
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./:/app:ro #this is bindmount how we sue in docker-compose
+            - /app/node_modules
+        environment:
+            - PORT=3000
+            # evn_file: #for now we have only single env variable we will use this later
+            #  - ./.env
