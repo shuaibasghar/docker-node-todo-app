@@ -189,3 +189,195 @@ docker volume rm VOLUME NAME
 
  now added docker-compose.yml
 
+docker-compose up -d
+[+] Building 14.4s (10/10) FINISHED                                                               docker:default
+ => [node-app internal] load .dockerignore                                                                  0.0s
+ => => transferring context: 105B                                                                           0.0s
+ => [node-app internal] load build definition from Dockerfile                                               0.0s
+ => => transferring dockerfile: 932B                                                                        0.0s
+ => [node-app internal] load metadata for docker.io/library/node:20.0-slim                                  3.2s
+ => [node-app 1/5] FROM docker.io/library/node:20.0-slim@sha256:702d475af4b8045f701afd10ea865f4454e9aab4fe  0.0s
+ => [node-app internal] load build context                                                                  0.0s
+ => => transferring context: 47.04kB                                                                        0.0s
+ => CACHED [node-app 2/5] WORKDIR /app                                                                      0.0s
+ => [node-app 3/5] COPY package.json .                                                                      0.0s
+ => [node-app 4/5] RUN npm install                                                                         10.6s
+ => [node-app 5/5] COPY . ./                                                                                0.0s
+ => [node-app] exporting to image                                                                           0.4s
+ => => exporting layers                                                                                     0.4s
+ => => writing image sha256:c339c942755e743a2d61d7099176b149981823a59f46837631eeddf1ac7b076a                0.0s 
+ => => naming to docker.io/library/docker-nodejs-node-app                                                   0.0s
+[+] Running 2/2
+ ✔ Network docker-nodejs_default       Created                                                              0.1s 
+ ✔ Container docker-nodejs-node-app-1  Started            
+
+commands of docker compose 
+docker-compose ps
+NAME                       IMAGE                    COMMAND                  SERVICE             CREATED             STATUS              PORTS
+docker-nodejs-node-app-1   docker-nodejs-node-app   "docker-entrypoint.s…"   node-app            4 minutes ago       Up 4 minutes        0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose ps -a
+NAME                       IMAGE                    COMMAND                  SERVICE             CREATED             STATUS              PORTS
+docker-nodejs-node-app-1   docker-nodejs-node-app   "docker-entrypoint.s…"   node-app            4 minutes ago       Up 4 minutes        0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+
+dlete the container with anonymouse volumes associated with the container
+
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose down -v
+[+] Running 2/2
+ ✔ Container docker-nodejs-node-app-1  Removed                                                              0.8s 
+ ✔ Network docker-nodejs_default       Removed   
+
+
+ docker-compose up -d
+[+] Running 2/2
+ ✔ Network docker-nodejs_default       Created                                                              0.1s 
+ ✔ Container docker-nodejs-node-app-1  Started                                                              0.2s 
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker images
+REPOSITORY                  TAG                                        IMAGE ID       CREATED             SIZE
+node-app-image              latest                                     00e9e39b1abb   About an hour ago   260MB
+<none>                      <none>                                     ac7b736abae1   2 hours ago         260MB
+<none>                      <none>                                     4333dcbf2e58   2 hours ago         260MB
+<none>                      <none>                                     ff9bb7a831ad   2 hours ago         255MB
+hello-world                 latest                                     d2c94e258dcb   10 months ago       13.3kB
+crazymax/linguist           7.20.0                                     dc5f9ae3be6a   22 months ago       72.2MB
+docker/desktop-git-helper   5a4fca126aadcd3f6cc3a011aa991de982ae7000   efe2d67c403b   2 years ago         44.2MB
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose images
+CONTAINER                  REPOSITORY               TAG                 IMAGE ID            SIZE
+docker-nodejs-node-app-1   docker-nodejs-node-app   latest              c339c942755e        257MB
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ 
+
+if you want to rebuild images
+use ---- docker-compose up -d --build      now  it will rebuild
+
+
+%%%%%%%% Docker Compose Dev to Prod multiple files %%%%%%%%%%
+
+we are npm run dev in dockerfile it runs node mone but it is only in development mode 
+---first rename docker-compose.backup.yml
+--create new files for different environments
+---- docker-compose.dev.yml
+---- docker-compose.prod.yml
+---- docker-compose.yml
+
+create diffent config for development and production mode
+
+here it is in development mode
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+[+] Running 2/2
+ ✔ Network docker-nodejs_default       Created     0.1s 
+ ✔ Container docker-nodejs-node-app-1  Started     0.2s 
+
+stopping container with removing anonymous volumes
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+[+] Running 2/2
+ ✔ Container docker-nodejs-node-app-1  Removed     0.9s 
+ ✔ Network docker-nodejs_default       Removed     0.4s 
+
+ now try with production mode 
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+in production mode you will not see any change becasue it has no bindmount volumes which sync code becasue it only works in develpemnt mode so now if you want to change you need to rebuild the image to see changes
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build ------it will force to create a new build
+
+and add docker-compose* in dockerignore file name which starts with docker-compose do not save it in container
+
+go in container and see nodemon is still there in production mode 
+docker-compose ps
+NAME                       IMAGE                    COMMAND                  SERVICE             CREATED              STATUS              PORTS
+docker-nodejs-node-app-1   docker-nodejs-node-app   "docker-entrypoint.s…"   node-app            About a minute ago   Up 55 seconds       0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose exec -it docker-nodejs-node-app-1 bash
+service "docker-nodejs-node-app-1" is not running
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose exec -it node-app bash
+root@722843de1437:/app# ls
+index.js  node_modules	package-lock.json  package.json
+root@722843de1437:/app# cd node_modules/
+root@722843de1437:/app/node_modules# ls
+abbrev		      depd			has-proto	   minimatch	   semver
+accepts		      destroy			has-symbols	   ms		   send
+anymatch	      ee-first			hasown		   negotiator	   serve-static
+array-flatten	      encodeurl			http-errors	   nodemon	   set-function-length
+balanced-match	      es-define-property	iconv-lite	   nopt		   setprototypeof
+binary-extensions     es-errors			ignore-by-default  normalize-path  side-channel
+body-parser	      escape-html		inherits	   object-inspect  simple-update-notifier
+brace-expansion       etag			ipaddr.js	   on-finished	   statuses
+braces		      express			is-binary-path	   parseurl	   supports-color
+bytes		      fill-range		is-extglob	   path-to-regexp  to-regex-range
+call-bind	      finalhandler		is-glob		   picomatch	   toidentifier
+chokidar	      forwarded			is-number	   proxy-addr	   touch
+concat-map	      fresh			lru-cache	   pstree.remy	   type-is
+content-disposition   function-bind		media-typer	   qs		   undefsafe
+content-type	      get-intrinsic		merge-descriptors  range-parser    unpipe
+cookie		      glob-parent		methods		   raw-body	   utils-merge
+cookie-signature      gopd			mime		   readdirp	   vary
+debug		      has-flag			mime-db		   safe-buffer	   yallist
+define-data-property  has-property-descriptors	mime-types	   safer-buffer
+root@722843de1437:/app/node_modules# 
+
+so how can we prevent the devDependencies like nodemon to tak ean extra space
+add this line in dockerfile    
+
+RUN npm install --only=production i means there should be something like this so see below how can we do like this
+so we have written an embedded bash script
+ARG NODE_ENV
+RUN if[ "$NODE_ENV" = "development" ];\
+         then  npm install;\
+         else npm install --only=production:\
+         fi
+
+
+and do some changes to 
+docker-compose.dev.yml file
+node-app:
+  build:
+    context: . //this is the path of dockerfile
+    args:
+      NODE_ENV:development  //this is the ARG WHich we used in dockerfile
+
+
+      add same in docker-compose.prod.yml
+
+
+see how our bash embeded script is working while making build
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+[+] Building 55.7s (10/10) FINISHED                                                               docker:default
+ => [node-app internal] load .dockerignore                                                                  0.0s
+ => => transferring context: 120B                                                                           0.0s
+ => [node-app internal] load build definition from Dockerfile                                               0.0s
+ => => transferring dockerfile: 1.24kB                                                                      0.0s
+ => [node-app internal] load metadata for docker.io/library/node:20.0-slim                                  3.8s
+ => [node-app 1/5] FROM docker.io/library/node:20.0-slim@sha256:702d475af4b8045f701afd10ea865f4454e9aab4fe  0.0s
+ => [node-app internal] load build context                                                                  0.0s
+ => => transferring context: 400B                                                                           0.0s
+ => CACHED [node-app 2/5] WORKDIR /app                                                                      0.0s
+ => CACHED [node-app 3/5] COPY package.json .                                                               0.0s
+ => [node-app 4/5] RUN if [ "production" = "development" ]; then         npm install;     else         np  49.9s
+ => [node-app 5/5] COPY . ./                                                                                0.1s
+ => [node-app] exporting to image                                                                           0.2s
+ => => exporting layers                                                                                     0.2s
+ => => writing image sha256:2b23db45477cea8df5015a2ea3a7e73e608ae469380a3103cc53eab5b3e79010                0.0s
+ => => naming to docker.io/library/docker-nodejs-node-app                                                   0.0s
+[+] Running 2/2
+ ✔ Network docker-nodejs_default       Created                                                              0.1s 
+ ✔ Container docker-nodejs-node-app-1  Started       
+
+now see no node_modules docker-compose exec -it node-app bash
+
+root@a67cbe2ecd1c:/app# ls
+index.js  node_modules	package-lock.json  package.json
+root@a67cbe2ecd1c:/app# cd node_modules/
+root@a67cbe2ecd1c:/app/node_modules# ls
+accepts		      ee-first		  has-property-descriptors  mime-types	    send
+array-flatten	      encodeurl		  has-proto		    ms		    serve-static
+body-parser	      es-define-property  has-symbols		    negotiator	    set-function-length
+bytes		      es-errors		  hasown		    object-inspect  setprototypeof
+call-bind	      escape-html	  http-errors		    on-finished     side-channel
+content-disposition   etag		  iconv-lite		    parseurl	    statuses
+content-type	      express		  inherits		    path-to-regexp  toidentifier
+cookie		      finalhandler	  ipaddr.js		    proxy-addr	    type-is
+cookie-signature      forwarded		  media-typer		    qs		    unpipe
+debug		      fresh		  merge-descriptors	    range-parser    utils-merge
+define-data-property  function-bind	  methods		    raw-body	    vary
+depd		      get-intrinsic	  mime			    safe-buffer
+destroy		      gopd		  mime-db		    safer-buffer
+root@a67cbe2ecd1c:/app/node_modules# 
+

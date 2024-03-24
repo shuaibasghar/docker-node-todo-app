@@ -12,7 +12,14 @@ WORKDIR /app
 COPY package.json .
 
 #install dependencies
-RUN npm install
+# RUN npm install
+
+ARG NODE_ENV
+RUN if [ "$NODE_ENV" = "development" ]; then \
+        npm install; \
+    else \
+        npm install --only=production; \
+    fi
 #here we are copying our rest of code 
 COPY . ./
 
@@ -23,4 +30,8 @@ EXPOSE ${PORT}
 #when we deploy our container it is going to run this command
 #CMD ["node","index.js"]
 #because now we are using nodemon
-CMD ["npm","run","dev"] 
+#CMD ["npm","run","dev"] 
+
+# after using docker-compose and differnt environment setup development and production
+#but we will over write this in docker-compose file
+CMD ["npm","start"] 
