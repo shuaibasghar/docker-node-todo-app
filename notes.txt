@@ -513,4 +513,87 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
  docker volume prune 
  first you need to start container now it will not delte the volumes which are assocaiated with contaienrs
 
- now see data is persisting still after deleting the container
+ now see data is persisting still after deleting the 
+ 
+
+ -----------
+ configuring mongoose 
+ so inspect the container to get ip address information
+ docker inspect docker-nodejs-node-app-1
+
+ in last section you will see Networks:
+  "Networks": {
+                "docker-nodejs_default": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "docker-nodejs-node-app-1",
+                        "node-app",
+                        "a685f438b041"
+                    ],
+                    "NetworkID": "a370cda5df5a1d4e97d1f141cf63e6acc6eb7a446af6a10e1a91e4f862247f13",
+                    "EndpointID": "cfadc4739d6d55c9f0f1a957a34910187cbf9bd91da8b6551b2eb45d57eef5ba",
+                    "Gateway": "172.30.0.1",
+                    "IPAddress": "172.30.0.3",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:1e:00:03",
+                    "DriverOpts": null
+                }
+            }
+
+
+
+      now inspect mongo container
+
+      docker inspect docker-nodejs-mongo-1
+  
+ "MacAddress": "",
+            "Networks": {
+                "docker-nodejs_default": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "docker-nodejs-mongo-1",
+                        "mongo",
+                        "164193f8f66b"
+                    ],
+                    "NetworkID": "a370cda5df5a1d4e97d1f141cf63e6acc6eb7a446af6a10e1a91e4f862247f13",
+                    "EndpointID": "7679a2e265c6d282321bde8e6527775dd6c25fcfac5d1372e0a731e0684c624b",
+                    "Gateway": "172.30.0.1",
+                   IPAddress": "172 ".30.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:1e:00:02",
+                    "DriverOpts": null
+                }
+
+we will use this mongo ip address in mongourl
+                   IPAddress": "172.30.0.2",
+
+but this is not a good practice to inspect container and see the address because when we dlete the contaner and re run create ip will be chaned every time there will be a new ip address of each container
+
+when one container communicates to other container we need a DNS 
+SEE Thisdocker network ls
+NETWORK ID     NAME                    DRIVER    SCOPE
+2ddaf9a63f2e   bridge                  bridge    local
+a370cda5df5a   docker-nodejs_default   bridge    local
+c5472cc1287e   host                    host      local
+0d4556146a70   none                    null      local
+dev@dev-Latitude-5490:~/Desktop$ 
+
+ docker-nodejs_default-----------THIS is created by docker-compose
+
+ so replace the ip address with mongo which is our service name
+    .connect("mongodb://root:shuaib@172.30.0.2:27017")
+    .connect("mongodb://root:shuaib@mongo:27017")
+
+
+mongo is dns automaticallyget ip address
+
+to see logs continously 
+docker logs docker-nodejs-node-app-1 -f

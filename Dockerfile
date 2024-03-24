@@ -4,7 +4,7 @@
 #it is very help full that if we rebuild images docker will use cached layer if noting ing changes if change only get that changed lay
 #first time it will take time to make build
 #any time we change our source code it just run the layer of COPY . ./ most of the time this will run again and again during build
-FROM node:20.0-slim
+FROM node:20.11.1
 #we will move our whole code inside the /app folder 
 WORKDIR /app
 
