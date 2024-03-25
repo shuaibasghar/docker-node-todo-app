@@ -3,7 +3,7 @@ run initalialy server on port
 create a custom image wrting configs in Dockerfile
 after configuring the docker file create an image
 stop the nodejs project from local
-sudo docker build . -------------------. means in current directory 
+sudo docker build . ------------------- . means in current directory 
 sudo docker images ls ---------------to see all the images
 sudo docker image rm 99ecbb57ee84 ----------------to remove the specific images by using id
 sudo docker build -t node-app-image . ------------------here -t flag is passed to give it a name
@@ -32,9 +32,9 @@ Additional notes:
     After running this command, you can use docker ps to list running containers and docker logs node-app to view the container's logs.
 */
 
-sudo docker rm containere name or id and contaienr image or id
+sudo docker rm container name or id and container image or id
 sudo docker rm node-app node-app-image
-bind the port on which we listern on our browser
+bind the port on which we listen on our browser
 
 sudo docker run -d --name node-app -p 3000:3000 node-app-image
 
@@ -50,7 +50,7 @@ MAY BE we also do not need env file inside of container
 and also we are getting nodemoudles inside our container but we do not need this because we are copy package.json an dusing command npm install
 so for this we use .dockerignore file like gitignore
 
-to delte the container
+to delete the container
 sudo docker rm node-app -f
 
 now add .dockerignore file and add the files which you want to be ignored
@@ -434,7 +434,7 @@ ev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose -f docker-co
  ✔ Container docker-nodejs-node-app-1  Started                                                             12.1s 
 dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ 
 
-let see mongodb is connected with a new containerdocker-compose ps
+let see mongodb is connected with a new container docker-compose ps
 NAME                       IMAGE                    COMMAND                  SERVICE             CREATED              STATUS              PORTS
 docker-nodejs-mongo-1      mongo                    "docker-entrypoint.s…"   mongo               About a minute ago   Up About a minute   27017/tcp
 docker-nodejs-node-app-1   docker-nodejs-node-app   "docker-entrypoint.s…"   node-app            About a minute ago   Up About a minute   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
