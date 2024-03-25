@@ -1,5 +1,8 @@
 version: "#"
 services:
+    nginx:
+        ports:
+            - "80:80"
     node-app:
         build:
             context: .

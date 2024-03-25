@@ -731,3 +731,60 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d -V --build
 dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ 
 
 
+
+--------
+adding nginx config and image
+
+now we no longer publish ports to our node application
+
+now we have configured nginx as a reverse proxy and let test working for load balancer 
+i have run two instance of node-app first it will send request to node-docker-node-app-1 and then node-docker-node-app-2 it means loadbalancer is working fine
+
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --scale node-app=02
+[+] Running 6/6
+ ✔ Network docker-nodejs_default       Created     0.1s 
+ ✔ Container docker-nodejs-nginx-1     Started     0.0s 
+ ✔ Container docker-nodejs-redis-1     Started     0.0s 
+ ✔ Container docker-nodejs-mongo-1     Started     0.0s 
+ ✔ Container docker-nodejs-node-app-2  Started     0.4s 
+ ✔ Container docker-nodejs-node-app-1  Started     0.4s 
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ 
+
+first instance node-app-1 
+docker logs docker-nodejs-node-app-1 -f
+
+> node-docker@1.0.0 dev
+> nodemon -L index.js
+
+[nodemon] 2.0.22
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,json
+[nodemon] starting `node index.js`
+(node:32) DeprecationWarning: current URL string parser is deprecated, and will be removed in a future version. To use the new parser, pass option { useNewUrlParser: true } to MongoClient.connect.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:32) [MONGODB DRIVER] Warning: Current Server Discovery and Monitoring engine is deprecated, and will be removed in a future version. To use the new Server Discover and Monitoring engine, pass option { useUnifiedTopology: true } to the MongoClient constructor.
+listening on port 3000
+(node:32) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
+successfully connected to the database
+check load balancer it runs
+
+
+second instance node-app-2
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker logs docker-nodejs-node-app-2 -f
+
+> node-docker@1.0.0 dev
+> nodemon -L index.js
+
+[nodemon] 2.0.22
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,json
+[nodemon] starting `node index.js`
+(node:32) DeprecationWarning: current URL string parser is deprecated, and will be removed in a future version. To use the new parser, pass option { useNewUrlParser: true } to MongoClient.connect.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:32) [MONGODB DRIVER] Warning: Current Server Discovery and Monitoring engine is deprecated, and will be removed in a future version. To use the new Server Discover and Monitoring engine, pass option { useUnifiedTopology: true } to the MongoClient constructor.
+listening on port 3000
+(node:32) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
+successfully connected to the database
+check load balancer it runs

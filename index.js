@@ -38,8 +38,7 @@ const connectWithRetry = () => {
 connectWithRetry();
 
 // if you run the behind a proxy(e.g. nginx)
-// app.set("trust proxy", 1);
-
+app.enable("trust proxy");
 app.use(
     session({
         store: new RedisStore({ client: redisClient }),
@@ -55,8 +54,9 @@ app.use(
 );
 
 app.use(express.json());
-app.get("/", (req, res) => {
+app.get("/api/v1", (req, res) => {
     res.send("<h2>HI There</h2>");
+    console.log("check load balancer it runs");
 });
 
 app.use("/api/v1/posts", postRouter);
