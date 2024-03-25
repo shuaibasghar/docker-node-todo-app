@@ -648,3 +648,53 @@ now lets run only node-app service by using --no-deps flage now it will not rely
 
 dock-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --no-deps node-app
 
+lets see each five seconds it gives error message 
+docker logs  docker-nodejs-node-app-1 -f
+
+> docker-nodejs@1.0.0 dev
+> nodemon index.js
+
+[nodemon] 3.1.0
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,cjs,json
+[nodemon] starting `node index.js`
+listening on port 3000
+error MongooseServerSelectionError: getaddrinfo EAI_AGAIN mongo
+    at _handleConnectionErrors (/app/node_modules/mongoose/lib/connection.js:875:11)
+    at NativeConnection.openUri (/app/node_modules/mongoose/lib/connection.js:826:11) {
+  reason: TopologyDescription {
+    type: 'Unknown',
+    servers: Map(1) { 'mongo:27017' => [ServerDescription] },
+    stale: false,
+    compatible: true,
+    heartbeatFrequencyMS: 10000,
+    localThresholdMS: 15,
+    setName: null,
+    maxElectionId: null,
+    maxSetVersion: null,
+    commonWireVersion: 0,
+    logicalSessionTimeoutMinutes: null
+  },
+  code: undefined
+}
+error MongooseServerSelectionError: getaddrinfo EAI_AGAIN mongo
+    at _handleConnectionErrors (/app/node_modules/mongoose/lib/connection.js:875:11)
+    at NativeConnection.openUri (/app/node_modules/mongoose/lib/connection.js:826:11) {
+  reason: TopologyDescription {
+    type: 'Unknown',
+    servers: Map(1) { 'mongo:27017' => [ServerDescription] },
+    stale: false,
+    compatible: true,
+    heartbeatFrequencyMS: 10000,
+    localThresholdMS: 15,
+    setName: null,
+    maxElectionId: null,
+    maxSetVersion: null,
+    commonWireVersion: 0,
+    logicalSessionTimeoutMinutes: null
+  },
+  code: undefined
+}
+
+
