@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const session = require("express-session");
 const redis = require("redis");
-const RedisStore = require("connect-redis").default;
+// const RedisStore = require("connect-redis").default;
 // const connectRedis = require("connect-redis").default;
 const {
     MONGO_USER,
@@ -20,15 +20,12 @@ const userRouter = require("./routes/userRoute");
 
 const app = express();
 // const RedisStore = connectRedis(session);
+let RedisStore = require("connect-redis")(session);
 const mongoUrl = `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_IP}:${MONGO_PORT}/?authSource=admin`;
 let redisClient = redis.createClient({
     host: REDIS_URL,
     port: REDIS_PORT,
 });
-// Redis client error handling
-// redisClient.connect();
-// redisClient.connect().catch(console.error);
-// redisClient.on("error", console.error);
 const connectWithRetry = () => {
     mongoose
         .connect(mongoUrl)
