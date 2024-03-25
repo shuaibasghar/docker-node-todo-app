@@ -597,3 +597,54 @@ mongo is dns automaticallyget ip address
 
 to see logs continously 
 docker logs docker-nodejs-node-app-1 -f
+
+
+------------------
+now when it comes to start docker container specially using docker-compose
+we run both container and mongo container ------it should actually knows the order both are running same time it can lead a issue if our node container runs first it will try to connect with database
+however our database is still not up it will crash our application
+
+we need a way to docker container to load our mongo instance or contianer load up first so that we can ensure that our data base is connected succesfully then node container should connect to it
+
+so we need this behaviour while development or production mode
+we make some changes in docker-compose file
+
+we have added this code depends_on it will first run mongo
+services:
+    node-app:
+        build: .
+        ports:
+            - "3000:3000"
+        environment:
+            - PORT=3000
+        depends_on:
+            - mongo
+
+see now our mongo container starts first
+dev@dev-Latitude-5490:~/Desktop/DevOps/docker-nodejs$ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+[+] Running 3/3
+ ✔ Network docker-nodejs_default       Created                                                              0.1s 
+ ✔ Container docker-nodejs-mongo-1     Started                                                              0.0s 
+ ✔ Container docker-nodejs-node-app-1  Started    
+
+------but this still does not fixed technically our issue
+because it just running the mongo container but not checking it that is it fully initialzed or not or database is listening or not
+it is just spin up the container mongo and nodeapp container is ready to connect it
+so for this we need to run some logic in our code we should not rely on any orchestor or docker-compose tool 
+we should handle scenario in our code it will try to connect retrying unitill mongo run and up but docker try only '30s'
+
+this is the logic it will always retry after 5s but may be this is not a good practice
+const connectWithRetry = () => {
+    mongoose
+        .connect(mongoUrl)
+        .then(() => console.log("successfully conned to the database"))
+        .catch((e) => {
+            console.log("error", e);
+            setTimeout(connectWithRetry, 5000);
+        });
+};
+
+now lets run only node-app service by using --no-deps flage now it will not rely on depends_on property
+
+dock-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --no-deps node-app
+

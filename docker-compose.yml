@@ -6,13 +6,15 @@ services:
             - "3000:3000"
         environment:
             - PORT=3000
+        depends_on:
+            - mongo
     # adding a database we can name it anythinlike mongo or mongodb
     mongo:
         image: mongo
         restart: always
-        environment:
-            - MONGO_INITDB_ROOT_USERNAME=root
-            - MONGO_INITDB_ROOT_PASSWORD=shuaib
+        # environment:
+        #     - MONGO_INITDB_ROOT_USERNAME=root
+        #     - MONGO_INITDB_ROOT_PASSWORD=shuaib
         volumes:
             - mongo-db:/data/db
 
