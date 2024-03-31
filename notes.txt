@@ -819,4 +819,6 @@ HOME=/home/ubuntu
 
 now make dir in apps/clone repo inside it
 
+now run docekr compose commnadn to make images and container
 
+------ docekr-compose -f docker-compose.yml -f docker-compose.prod.yml up -d 
