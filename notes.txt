@@ -788,3 +788,32 @@ listening on port 3000
 (node:32) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
 successfully connected to the database
 check load balancer it runs
+
+
+---------
+now i have created aws ec2 instance and create .env and copy my envs from This docker file
+add all those in env file
+
+-ls -al 
+nao .profile
+add this script there in last    set -o allexport; source /home/ubuntu/.env; set -o allexport
+and close the terminal and connect again with ec2 instance then see --------printenv to see all of your env virables  
+
+ubuntu@ip-172-31-35-180:~$ nano .profile 
+ubuntu@ip-172-31-35-180:~$ printenv
+SHELL=/bin/bash
+MONGO_PASSWORD=shuaib
+PWD=/home/ubuntu
+LOGNAME=ubuntu
+MONGO_INITDB_ROOT_PASSWORD=shuaib
+XDG_SESSION_TYPE=tty
+NODE_ENV=production
+MONGO_INITDB_ROOT_USERNAME=root
+_=/usr/bin/printenv
+MONGO_USER=root
+MOTD_SHOWN=pam
+LINES=30
+HOME=/home/ubuntu
+
+
+
