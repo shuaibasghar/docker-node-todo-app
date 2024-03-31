@@ -790,6 +790,7 @@ successfully connected to the database
 check load balancer it runs
 
 
+----------------%%%%%%%%%Deploying Production section%%%%%%%%%%
 ---------
 now i have created aws ec2 instance and create .env and copy my envs from This docker file
 add all those in env file
@@ -815,5 +816,7 @@ MOTD_SHOWN=pam
 LINES=30
 HOME=/home/ubuntu
 
+
+now make dir in apps/clone repo inside it
 
 
